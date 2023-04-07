@@ -9,58 +9,15 @@ namespace MultiSpeak_V416_Release.Services
     public class MeterReadingService
     {
         private readonly int numberOfMeters;
-        private readonly List<MeterReadingProxy> _meterReadingList;
+        private readonly Dictionary<string, double> initialMeterReadings;
 
         public MeterReadingService()
         {
             numberOfMeters = 15000;
-            var dateRanges = SplitDateRange(RoundUpToNearest30(DateTime.Now.AddMonths(-1)), DateTime.Now, 1440);
-            //_meterReadingList = Enumerable.Range(0, 15000)
-            //    .SelectMany(meterId => dateRanges.Select((x, i) => new meterReading {
-            //        meterID = new meterID {
-            //            meterNo = $"M{meterId.ToString().PadLeft(5, '0')}",
-            //            utility = "Electric",
-            //            objectID = meterId.ToString(),
-            //            serviceType = serviceType.Electric,
-            //        },
-            //        readingValues = new[] {
-            //            new readingValue {
-            //                measurementPeriod = measurementPeriod.Current,
-            //                measurementPeriodSpecified = true,
-            //                timeStamp = x.Item1,
-            //                timeStampSpecified = true,
-            //                units = uom.kWh,
-            //                unitsSpecified = true,
-            //                value = "60000"
-            //            },
-            //            new readingValue {
-            //                measurementPeriod = measurementPeriod.Current,
-            //                measurementPeriodSpecified = true,
-            //                timeStamp = x.Item1,
-            //                timeStampSpecified = true,
-            //                units = uom.kVA,
-            //                unitsSpecified = true,
-            //                value = ".4"
-            //            },
-            //            new readingValue {
-            //                measurementPeriod = measurementPeriod.Current,
-            //                measurementPeriodSpecified = true,
-            //                timeStamp = x.Item1,
-            //                timeStampSpecified = true,
-            //                units = uom.kW,
-            //                unitsSpecified = true,
-            //                value = "100"
-            //            }
-            //        }
-            //    })).Select((x, i) => {
-            //        x.objectID = i.ToString();
-            //        var y = new MeterReadingProxy {
-            //            Id = i,
-            //            meterReading = x
-            //        };
-            //        return y;
-            //    }).ToList();
-            _meterReadingList = new List<MeterReadingProxy>();
+
+            var randkWh = new Random();
+            initialMeterReadings = Enumerable.Range(1, 1500)
+                .Select(x => new KeyValuePair<string, double>(x.ToString(), (double)randkWh.Next(1000, 5000))).ToDictionary(x => x.Key, x => x.Value);
         }
 
         private class MeterReadingProxy
@@ -72,9 +29,6 @@ namespace MultiSpeak_V416_Release.Services
 
         public meterReading[] GetLatestReadings(string lastReceived)
         {
-            // (DateStart - DateEnd) / 15 minutes = number of time periods
-            // n time periods * m meters = number of readings
-            // 
 
             // figure out which time period we're in
             int.TryParse(lastReceived, out int startId);
@@ -88,6 +42,13 @@ namespace MultiSpeak_V416_Release.Services
             }
 
             var timePeriod = RoundUpToNearest30(DateTime.Now.AddMonths(-1)).AddMinutes(tp * 15);
+
+            if (timePeriod > DateTime.Now) {
+                return new meterReading[0];
+            }
+
+            // need to increase the kWh by a random amount
+            var randkWh = new Random();
 
             return Enumerable.Range(startId, count)
                 .Select(meterId => new meterReading {
@@ -107,7 +68,7 @@ namespace MultiSpeak_V416_Release.Services
                             timeStampSpecified = true,
                             units = uom.kWh,
                             unitsSpecified = true,
-                            value = "60000"
+                            value = (initialMeterReadings[((meterId % numberOfMeters) + (tp * 1)).ToString()] + (randkWh.NextDouble() * (tp + 1))).ToString(),
                         },
                         new readingValue {
                             measurementPeriod = measurementPeriod.Current,

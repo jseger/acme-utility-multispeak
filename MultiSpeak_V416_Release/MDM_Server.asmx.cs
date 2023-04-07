@@ -32,7 +32,7 @@ namespace MultiSpeak4
             //CODEGEN: This call is required by the ASP.NET Web Services Designer
             InitializeComponent();
 
-			meterReadingService = new MeterReadingService();
+            meterReadingService = new MeterReadingService();
         }
 
 
