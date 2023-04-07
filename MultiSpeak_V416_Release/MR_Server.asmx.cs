@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MultiSpeak_V416_Release.Services;
+using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Data;
@@ -23,11 +24,13 @@ namespace MultiSpeak4
 
         public MultiSpeakMsgHeader MultiSpeakMsgHeader;
 
-
+        private readonly MeterReadingService meterReadingService;
         public MR_Server()
         {
             //CODEGEN: This call is required by the ASP.NET Web Services Designer
             InitializeComponent();
+
+            meterReadingService = new MeterReadingService();
         }
 
 
@@ -36,13 +39,16 @@ namespace MultiSpeak4
         [WebMethod(Description="Requester pings URL of MR to see if it is alive.   Returns errorObject(s) as necessary to communicate application status.")]
         [SoapHeader("MultiSpeakMsgHeader", Direction=SoapHeaderDirection.InOut)]
         public errorObject[] PingURL() {
-            return null;
+            return new errorObject[0];
         }
 
         [WebMethod(Description="Requester requests a list of methods supported by MR.")]
         [SoapHeader("MultiSpeakMsgHeader", Direction=SoapHeaderDirection.InOut)]
         public string[] GetMethods() {
-            return null;
+            return new string[] {
+                "GetLatestReadings",
+                "PingURL",
+            };
         }
 
         [WebMethod(Description = "The client requests from the server a list of names of domains supported by the server.  This method is used, along with the GetDomainMembers method to enable systems to exchange information about application-specific or installation-specific lists of information, such as the lists of counties for this installation or the list of serviceStatusCodes used by the server. It is recommended that domain names be returned in the form of the name of a named object (noun) in the MultiSpeak schema dotted with the field name of interest.  For instance, if the system of record is returning workflow status codes that would be used on work orders, it is suggested that the domain name be called workOrder.workflowStatus, using the same spelling and capitalization used in the MultiSpeak schema.")]
@@ -248,7 +254,7 @@ namespace MultiSpeak4
         [SoapHeader("MultiSpeakMsgHeader", Direction = SoapHeaderDirection.InOut)]
         public meterReading[] GetLatestReadings(string lastReceived)
         {
-            return null;
+            return meterReadingService.GetLatestReadings(lastReceived);
         }
 		
 		[WebMethod(Description = "Returns the latest readings for a list of meters for a specific date range and reading type desired. Reading types may be specified using the fieldName parameter.  Valid values for fieldName are those that are specified in the most current formattedBlock Implementation Guidelines Document, as issued by the MultiSpeak Initiative. The requestor may specify a preferred format for the returned formattedBlock using the formattedBlockTemplateName parameter.  If the publisher supports this template, the data should be returned in that format; if not the publisher should still return the data, but in its preferred formattedBlockTemplate format.  The calling parameter lastReceived is included so that large sets of data can be returned in manageable blocks.  lastReceived should carry an empty string the first time in a session that this method is invoked.  When multiple calls to this method are required to obtain all of the data, the lastReceived should carry in subsequent calls the objectID of the data instance noted by the server as being the lastSent.")]

@@ -3,6 +3,9 @@ This application is the MutliSpeak interface for a fake utility company called A
 
 ## Current Interfaces
 - MDM Server
+  - GetAllMeters
+  - GetLatestReadings
+- MR Server
   - GetLatestReadings
 
 ## Future Interfaces
