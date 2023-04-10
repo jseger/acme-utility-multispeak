@@ -18,6 +18,7 @@ namespace MultiSpeak_V416_Release.Services
             var randkWh = new Random();
             initialMeterReadings = Enumerable.Range(1, 1500)
                 .Select(x => new KeyValuePair<string, double>(x.ToString(), (double)randkWh.Next(1000, 5000))).ToDictionary(x => x.Key, x => x.Value);
+
         }
 
         private class MeterReadingProxy
@@ -49,6 +50,8 @@ namespace MultiSpeak_V416_Release.Services
 
             // need to increase the kWh by a random amount
             var randkWh = new Random();
+            var randKVA = new Random();
+            var randKW = new Random();
 
             return Enumerable.Range(startId, count)
                 .Select(meterId => new meterReading {
@@ -77,7 +80,7 @@ namespace MultiSpeak_V416_Release.Services
                             timeStampSpecified = true,
                             units = uom.kVA,
                             unitsSpecified = true,
-                            value = ".4"
+                            value = randKVA.NextDouble().ToString()
                         },
                         new readingValue {
                             measurementPeriod = measurementPeriod.Current,
@@ -86,7 +89,7 @@ namespace MultiSpeak_V416_Release.Services
                             timeStampSpecified = true,
                             units = uom.kW,
                             unitsSpecified = true,
-                            value = "100"
+                            value = randKW.Next(100, 300).ToString(),
                         }
                     }
                 }).ToArray();
